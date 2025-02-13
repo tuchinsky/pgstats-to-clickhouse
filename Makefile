@@ -1,4 +1,4 @@
-docker-compose-file=./test/docker-compose.yml
+docker-compose-file=./test/docker-compose.yaml
 
 test-full: up
 	@go test ./...
@@ -8,12 +8,13 @@ test:
 	@go test ./...
 
 up:
-	docker-compose -f ${docker-compose-file} up -d --build
+	docker-compose -f ${docker-compose-file} up -d
 
 	sleep 3
 
 	docker-compose -f ${docker-compose-file} exec -T postgres psql -U postgres  < ./test/fixtures/postgres.sql
 	docker-compose -f ${docker-compose-file} exec -T clickhouse clickhouse-client -mn < ./test/fixtures/clickhouse.sql
+	# docker-compose -f ${docker-compose-file} exec -T clickhouse-1 clickhouse-client -mn < ./test/fixtures/clickhouse-cluster.sql
 
 down:
 	docker-compose -f ${docker-compose-file} down --volumes

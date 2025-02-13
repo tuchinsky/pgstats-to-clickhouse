@@ -1,0 +1,71 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.3.22.3
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=200
+
+  grafana:
+    image: grafana/grafana:11.4.0-ubuntu
+    ports:
+     - "3001:3000"
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning/datasources
+      - ../grafana/dashboards/provisioning:/etc/grafana/provisioning/dashboards
+      - ../grafana/dashboards/files:/var/lib/grafana/dashboards
+    environment:
+      GF_INSTALL_PLUGINS: "vertamedia-clickhouse-datasource"
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+
+  # zookeeper:
+  #   image: zookeeper:3.9.3
+  #   healthcheck:
+  #     test: nc -z localhost 2181 || exit -1
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+  # clickhouse-1:
+  #   image: clickhouse/clickhouse-server:23.3.22.3
+  #   depends_on:
+  #     - zookeeper
+  #   volumes:
+  #     - ./ssl/clickhouse/server.key:/tmp/server.key
+  #     - ./ssl/clickhouse/server.crt:/tmp/server.crt
+  #     - ./clickhouse-1.xml:/etc/clickhouse-server/config.xml
+  #     - ./users.xml:/etc/clickhouse-server/users.xml
+  #   ports:
+  #     - "8123:8123"
+  #     - "8443:8443"
+  #     - "9000:9000"
+  #     - "9440:9440"
+
+  # clickhouse-2:
+  #   image: clickhouse/clickhouse-server:23.3.22.3
+  #   depends_on:
+  #     - zookeeper
+  #   volumes:
+  #     - ./ssl/clickhouse/server.key:/tmp/server.key
+  #     - ./ssl/clickhouse/server.crt:/tmp/server.crt
+  #     - ./clickhouse-2.xml:/etc/clickhouse-server/config.xml
+  #     - ./users.xml:/etc/clickhouse-server/users.xml
+
+  # clickhouse-3:
+  #   image: clickhouse/clickhouse-server:23.3.22.3
+  #   depends_on:
+  #     - zookeeper
+  #   volumes:
+  #     - ./ssl/clickhouse/server.key:/tmp/server.key
+  #     - ./ssl/clickhouse/server.crt:/tmp/server.crt
+  #     - ./clickhouse-3.xml:/etc/clickhouse-server/config.xml
+  #     - ./users.xml:/etc/clickhouse-server/users.xml
