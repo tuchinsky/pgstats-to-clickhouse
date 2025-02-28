@@ -32,6 +32,31 @@ CREATE TABLE IF NOT EXISTS pg.pg_stat_statements (
 
 CREATE TABLE IF NOT EXISTS pg.pg_stat_statements_buffer AS pg.pg_stat_statements ENGINE = Buffer(pg, pg_stat_statements, 16, 10, 30, 1000, 10000, 1000000, 10000000);
 
+CREATE TABLE IF NOT EXISTS pg.pg_stat_activity (
+     created_date Date DEFAULT today(),
+     created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
+     created_hour UInt32 DEFAULT toUInt32(toStartOfHour(now())) Codec(Delta, ZSTD),
+     hostname LowCardinality(String),
+     datname LowCardinality(String),
+     pid Float64,
+     username LowCardinality(String),
+     application_name LowCardinality(String),
+     xact_start String,
+     query_start String,
+     state LowCardinality(String),
+     query String,
+     backend_type LowCardinality(String),
+     wait_event_type LowCardinality(String),
+     wait_event LowCardinality(String),
+     query_duration Float64
+) ENGINE = MergeTree()
+    PARTITION BY created_date
+    ORDER BY (created_hour, hostname, created_at, datname, username)
+    TTL created_date + toIntervalDay(3)
+    SETTINGS index_granularity = 8192;
+
+CREATE TABLE IF NOT EXISTS pg.pg_stat_activity_buffer AS pg.pg_stat_activity ENGINE = Buffer(pg, pg_stat_activity, 16, 10, 30, 1000, 10000, 1000000, 10000000);
+
 CREATE TABLE IF NOT EXISTS pg.pg_statio_tables (
    created_date Date DEFAULT today(),
    created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
