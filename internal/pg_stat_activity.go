@@ -19,6 +19,7 @@ type PgStatActivity struct {
 	backend_type     string
 	wait_event_type  string
 	wait_event       string
+	xact_duration    float64
 	query_duration   float64
 }
 
@@ -40,6 +41,7 @@ func (f *PgStatActivityFactory) CollectQuery() string {
 				backend_type,
 				wait_event_type,
 				wait_event,
+				extract(epoch from now() - xact_start)::bigint as xact_duration,
 				extract(epoch from now() - query_start)::bigint as query_duration
 			FROM pg_stat_activity
 			WHERE pid <> pg_backend_pid()
@@ -52,7 +54,7 @@ func (f *PgStatActivityFactory) CollectQuery() string {
 
 func (f *PgStatActivityFactory) PushQuery() string {
 	//query to store in clickhouse populated data with hostname
-	return `INSERT INTO pg.pg_stat_activity_buffer(
+	return `INSERT INTO pgmetrics.pg_stat_activity_buffer(
 					hostname,
 					datname,
 					pid,
@@ -65,8 +67,9 @@ func (f *PgStatActivityFactory) PushQuery() string {
 					backend_type,
 					wait_event_type,
 					wait_event,
+					xact_duration,
 					query_duration) VALUES (
-						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 					)`
 }
 
@@ -84,6 +87,7 @@ func (f *PgStatActivityFactory) NewMetric(rows *sql.Rows) (PgMetric, error) {
 		&metric.backend_type,
 		&metric.wait_event_type,
 		&metric.wait_event,
+		&metric.xact_duration,
 		&metric.query_duration,
 	)
 	if err != nil {
@@ -119,6 +123,7 @@ func (p *PgStatActivity) delta(old PgMetric) PgMetric {
 		backend_type:     p.backend_type,
 		wait_event_type:  p.wait_event_type,
 		wait_event:       p.wait_event,
+		xact_duration:    p.xact_duration,
 		query_duration:   p.query_duration,
 	}
 }
@@ -141,6 +146,7 @@ func (p *PgStatActivity) getValue(hostname string) []interface{} {
 		p.backend_type,
 		p.wait_event_type,
 		p.wait_event,
+		p.xact_duration,
 		p.query_duration,
 	}
 }

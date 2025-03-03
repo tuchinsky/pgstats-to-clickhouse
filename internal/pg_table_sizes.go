@@ -31,13 +31,13 @@ func (f *PgTableSizeFactory) CollectQuery() string {
 			  n_dead_tup,
 			  pg_table_size(relid) AS size,
 			  pg_indexes_size(relid) AS idx_size
-			FROM pg_stat_user_tables 
+			FROM pg_stat_user_tables
 			WHERE schemaname NOT IN ('pg_catalog', 'pg_toast', 'information_schema')`
 }
 
 func (f *PgTableSizeFactory) PushQuery() string {
 	//query to store in clickhouse populated data with hostname
-	return `INSERT INTO pg.pg_table_size_buffer(
+	return `INSERT INTO pgmetrics.pg_table_size_buffer(
 						hostname,
 						datname,
 						schemaname,
