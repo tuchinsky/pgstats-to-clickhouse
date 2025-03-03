@@ -10,8 +10,8 @@ type PgStatActivityFactory struct{}
 type PgStatActivity struct {
 	datname          string
 	pid              int64
-	username         string
-	application_name string
+	username         sql.NullString
+	application_name sql.NullString
 	xact_start       string
 	query_start      string
 	state            string
@@ -129,7 +129,7 @@ func (p *PgStatActivity) delta(old PgMetric) PgMetric {
 }
 
 func (p *PgStatActivity) getHash() uint32 {
-	return getHash(p.datname, p.username, p.query)
+	return getHash(p.datname, p.query)
 }
 
 func (p *PgStatActivity) getValue(hostname string) []interface{} {
