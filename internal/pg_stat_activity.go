@@ -8,19 +8,21 @@ import (
 type PgStatActivityFactory struct{}
 
 type PgStatActivity struct {
-	datname          string
-	pid              int64
-	username         sql.NullString
-	application_name sql.NullString
-	xact_start       string
-	query_start      string
-	state            string
-	query            string
-	backend_type     string
-	wait_event_type  string
-	wait_event       string
-	xact_duration    float64
-	query_duration   float64
+	datname               string
+	pid                   int64
+	username              sql.NullString
+	application_name      sql.NullString
+	xact_start            string
+	query_start           string
+	state                 string
+	query                 string
+	query_id              sql.NullString
+	backend_type          sql.NullString
+	wait_event_type       sql.NullString
+	wait_event            sql.NullString
+	xact_duration         float64
+	query_duration        float64
+	state_change_duration float64
 }
 
 func (f *PgStatActivityFactory) Name() string {
@@ -38,11 +40,13 @@ func (f *PgStatActivityFactory) CollectQuery() string {
 				query_start,
 				state,
 				query,
+				query_id,
 				backend_type,
 				wait_event_type,
 				wait_event,
 				extract(epoch from now() - xact_start)::bigint as xact_duration,
-				extract(epoch from now() - query_start)::bigint as query_duration
+				extract(epoch from now() - query_start)::bigint as query_duration,
+				extract(epoch from now() - state_change)::bigint as state_change_duration
 			FROM pg_stat_activity
 			WHERE pid <> pg_backend_pid()
 				AND state <> 'idle'
@@ -64,12 +68,14 @@ func (f *PgStatActivityFactory) PushQuery() string {
 					query_start,
 					state,
 					query,
+					query_id,
 					backend_type,
 					wait_event_type,
 					wait_event,
 					xact_duration,
-					query_duration) VALUES (
-						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+					query_duration,
+					state_change_duration) VALUES (
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 					)`
 }
 
@@ -84,11 +90,13 @@ func (f *PgStatActivityFactory) NewMetric(rows *sql.Rows) (PgMetric, error) {
 		&metric.query_start,
 		&metric.state,
 		&metric.query,
+		&metric.query_id,
 		&metric.backend_type,
 		&metric.wait_event_type,
 		&metric.wait_event,
 		&metric.xact_duration,
 		&metric.query_duration,
+		&metric.state_change_duration,
 	)
 	if err != nil {
 		return nil, err
@@ -112,19 +120,21 @@ func (p *PgStatActivity) delta(old PgMetric) PgMetric {
 	}
 
 	return &PgStatActivity{
-		datname:          p.datname,
-		pid:              p.pid,
-		username:         p.username,
-		application_name: p.application_name,
-		xact_start:       p.xact_start,
-		query_start:      p.query_start,
-		state:            p.state,
-		query:            p.query,
-		backend_type:     p.backend_type,
-		wait_event_type:  p.wait_event_type,
-		wait_event:       p.wait_event,
-		xact_duration:    p.xact_duration,
-		query_duration:   p.query_duration,
+		datname:               p.datname,
+		pid:                   p.pid,
+		username:              p.username,
+		application_name:      p.application_name,
+		xact_start:            p.xact_start,
+		query_start:           p.query_start,
+		state:                 p.state,
+		query:                 p.query,
+		query_id:              p.query_id,
+		backend_type:          p.backend_type,
+		wait_event_type:       p.wait_event_type,
+		wait_event:            p.wait_event,
+		xact_duration:         p.xact_duration,
+		query_duration:        p.query_duration,
+		state_change_duration: p.state_change_duration,
 	}
 }
 
@@ -143,10 +153,12 @@ func (p *PgStatActivity) getValue(hostname string) []interface{} {
 		p.query_start,
 		p.state,
 		p.query,
+		p.query_id,
 		p.backend_type,
 		p.wait_event_type,
 		p.wait_event,
 		p.xact_duration,
 		p.query_duration,
+		p.state_change_duration,
 	}
 }

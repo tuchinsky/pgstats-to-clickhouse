@@ -45,11 +45,13 @@ CREATE TABLE IF NOT EXISTS pgmetrics.pg_stat_activity ON CLUSTER pgmetrics (
      query_start String,
      state LowCardinality(String),
      query String,
+     query_id String,
      backend_type LowCardinality(String),
      wait_event_type LowCardinality(String),
      wait_event LowCardinality(String),
      xact_duration Float64,
-     query_duration Float64
+     query_duration Float64,
+     state_change_duration Float64
 ) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{database}/{shard}/{table}', '{replica}')
     PARTITION BY created_date
     ORDER BY (created_hour, hostname, created_at, datname, username)
