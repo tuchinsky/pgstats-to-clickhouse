@@ -28,15 +28,15 @@ env INTERVAL="30s" \
      STATIO_POSTGRES_DSN="postgres://postgres@localhost:5432/postgres?sslmode=disable" \
      ./bin/pgstats-to-clickhouse
 
-docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "drop table pg_stat_statements"
-docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "create extension pg_stat_statements"
-docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres -i'
+docker-compose -f ./test/docker-compose.yaml exec -T postgres psql -U postgres -c "drop table pg_stat_statements"
+docker-compose -f ./test/docker-compose.yaml exec -T postgres psql -U postgres -c "create extension pg_stat_statements"
+docker-compose -f ./test/docker-compose.yaml exec -T postgres su postgres -c 'pgbench -U postgres -i'
 
-docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres'
+docker-compose -f ./test/docker-compose.yaml exec -T postgres su postgres -c 'pgbench -U postgres'
 ...
 # wait 30 sec
 ...
-docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres'
+docker-compose -f ./test/docker-compose.yaml exec -T postgres su postgres -c 'pgbench -U postgres'
 ```
 open: http://localhost:3000/d/TzHfPjPnz/pg_top_queries
 
@@ -44,8 +44,8 @@ open: http://localhost:3000/d/TzHfPjPnz/pg_top_queries
 
 tested on
 ```
-Clickhouse 20.1
-PostgreSQL 11
+Clickhouse 23.3
+PostgreSQL 14+
 Go 1.14
 ```
 

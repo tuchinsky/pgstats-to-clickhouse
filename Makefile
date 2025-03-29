@@ -1,4 +1,4 @@
-docker-compose-file=./test/docker-compose.yml
+docker-compose-file=./test/docker-compose.yaml
 
 test-full: up
 	@go test ./...

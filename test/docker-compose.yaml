@@ -1,20 +1,21 @@
-version: "2"
 services:
   clickhouse:
-    image: yandex/clickhouse-server:20.1
+    image: clickhouse/clickhouse-server:23.3.22.3
     ports:
       - "8123:8123"
       - "9000:9000"
+
   postgres:
-    image: postgres:14
+    image: postgres:14.17
     ports:
       - "5432:5432"
     environment:
       POSTGRES_DB: "postgres"
       POSTGRES_HOST_AUTH_METHOD: "trust"
     command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=200
+
   grafana:
-    image: grafana/grafana:7.1.5-ubuntu
+    image: grafana/grafana:11.4.0-ubuntu
     ports:
      - "3000:3000"
     volumes:
@@ -22,7 +23,7 @@ services:
       - ../grafana/dashboards/provisioning:/etc/grafana/provisioning/dashboards
       - ../grafana/dashboards/files:/var/lib/grafana/dashboards
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "vertamedia-clickhouse-datasource"
       GF_SECURITY_ADMIN_USER: "admin"
-      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "grafana"
       GF_AUTH_ANONYMOUS_ENABLED: "true"

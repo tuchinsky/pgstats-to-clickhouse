@@ -1,0 +1,153 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "$$hashKey": "object:49",
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    t,\n    groupArray((query, rate)) AS groupArr\nFROM\n(\n    SELECT\n        t,\n        query,\n        if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate\n    FROM\n(\n        SELECT\n            (intDiv(toUInt32(created_at), $interval) * $interval) * 1000 AS t,\n            query,\n            max(calls) AS c\n        FROM pgmetrics.pg_stat_statements\n        WHERE\n            ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n            AND((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n            AND query IN (\n    SELECT query\n    FROM pgmetrics.pg_stat_statements\n    WHERE\n        ((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n        AND created_date >= toDate($from)\n        AND created_date <= toDate($to)\n    GROUP BY query\n    ORDER BY sum(total_exec_time) DESC\n    LIMIT 15)\n        GROUP BY\n            t,\n            query\n        ORDER BY\n            query ASC,\n            t ASC\n)\n    WHERE rate >= 0\n)\nGROUP BY t\nORDER BY t ASC",
+          "rawQuery": "/* grafana dashboard=pg_stat_statements, user=1 */\nSELECT\n    t,\n    groupArray((query, rate)) AS groupArr\nFROM\n(\n    SELECT\n        t,\n        query,\n        if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate\n    FROM\n(\n        SELECT\n            (intDiv(toUInt32(created_at), 10) * 10) * 1000 AS t,\n            query,\n            max(calls) AS c\n        FROM pgmetrics.pg_stat_statements\n        WHERE\n            ((created_date >= toDate(1743254079)) AND(created_date <= toDate(1743275679)))\n            AND((created_at >= toDateTime(1743254079)) AND(created_at <= toDateTime(1743275679)))\n            AND query IN (\n    SELECT query\n    FROM pgmetrics.pg_stat_statements\n    WHERE\n        ((created_at >= toDateTime(1743254079)) AND(created_at <= toDateTime(1743275679)))\n        AND created_date >= toDate(1743254079)\n        AND created_date <= toDate(1743275679)\n    GROUP BY query\n    ORDER BY sum(total_exec_time) DESC\n    LIMIT 15)\n        GROUP BY\n            t,\n            query\n        ORDER BY\n            query ASC,\n            t ASC\n)\n    WHERE rate >= 0\n)\nGROUP BY t\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "pg_stat_statements",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "pg_stat_statements",
+  "uid": "s6BrnTjZz",
+  "version": 1,
+  "weekStart": ""
+}
