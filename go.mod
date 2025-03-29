@@ -1,4 +1,4 @@
-module github.com/chobostar/pgstats-to-clickhouse
+module github.com/tuchinsky/pgstats-to-clickhouse
 
 go 1.16
 

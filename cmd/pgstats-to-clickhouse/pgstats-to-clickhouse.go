@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/chobostar/pgstats-to-clickhouse/internal"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/tuchinsky/pgstats-to-clickhouse/internal"
 )
 
 var usage = `pgstats-to-clickhouse - collects pg_stat_statements, pg_statio_all_tables and pg_stat_tables output and pushes to remote clickhouse
