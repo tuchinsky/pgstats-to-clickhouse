@@ -3,11 +3,12 @@ package internal
 import (
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	_ "github.com/mailru/go-clickhouse"
-	"time"
 )
 
 var (
@@ -16,7 +17,8 @@ var (
 )
 
 // StatsCollector - хранит последний state снапшота метрик и при отправке считает дельты по ней.
-//    не считает дельту и не отправляет метрики, снапшот истек по ttl
+//
+//	не считает дельту и не отправляет метрики, снапшот истек по ttl
 type StatsCollector struct {
 	hostname string
 	cf       CollectorFactory
@@ -84,7 +86,7 @@ func NewStatsCollector(collector CollectorFactory, hostname string, postgresDsn 
 	return sc, nil
 }
 
-//Tick is main loop
+// Tick is main loop
 func (sc *StatsCollector) Tick() error {
 	newSnap, err := sc.Collect()
 	if err != nil {
@@ -131,8 +133,8 @@ func (sc *StatsCollector) Collect() (*PgStatMetrics, error) {
 }
 
 /*
-	Допускается коллизия или data loss при вызовах pg_stat_statements_reset().
-	Сравнивается предыдущий снапшот и считается дельта при допустимом snapshot stale по ttl.
+Допускается коллизия или data loss при вызовах pg_stat_statements_reset().
+Сравнивается предыдущий снапшот и считается дельта при допустимом snapshot stale по ttl.
 */
 func (sc *StatsCollector) Merge(metrics *PgStatMetrics) ([]PgMetric, error) {
 	if metrics.version-sc.snapshot.version > sc.ttl {
