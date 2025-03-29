@@ -63,14 +63,14 @@ func (f *PgStatioTableFactory) CollectQuery() string {
 				autovacuum_count,
 				analyze_count,
 				autoanalyze_count
-			FROM pg_statio_user_tables a 
-			JOIN pg_stat_user_tables b USING(relid) 
+			FROM pg_statio_user_tables a
+			JOIN pg_stat_user_tables b USING(relid)
 			WHERE a.schemaname not in ('pg_toast', 'information_schema')`
 }
 
 func (f *PgStatioTableFactory) PushQuery() string {
 	//query to store in clickhouse populated data with hostname
-	return `INSERT INTO pg.pg_statio_tables_buffer(
+	return `INSERT INTO pgmetrics.pg_statio_tables_buffer(
 						hostname,
 						datname,
 						schemaname,
@@ -95,7 +95,7 @@ func (f *PgStatioTableFactory) PushQuery() string {
 						autovacuum_count,
 						analyze_count,
 						autoanalyze_count) VALUES (
-						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
 					    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
 						?, ?, ?, ?
 					)`

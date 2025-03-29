@@ -64,7 +64,7 @@ func (f *PgStatStatementsFactory) CollectQuery() string {
 
 func (f *PgStatStatementsFactory) PushQuery() string {
 	//query to store in clickhouse populated data with hostname
-	return `INSERT INTO pg.pg_stat_statements_buffer(
+	return `INSERT INTO pgmetrics.pg_stat_statements_buffer(
 					hostname,
 					datname,
 					username,

@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS pg;
+CREATE DATABASE IF NOT EXISTS pgmetrics;
 
-CREATE TABLE IF NOT EXISTS pg.pg_stat_statements (
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_stat_statements (
      created_date Date DEFAULT today(),
      created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
      created_hour UInt32 DEFAULT toUInt32(toStartOfHour(now())) Codec(Delta, ZSTD),
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS pg.pg_stat_statements (
     TTL created_date + toIntervalDay(3)
     SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS pg.pg_stat_statements_buffer AS pg.pg_stat_statements ENGINE = Buffer(pg, pg_stat_statements, 16, 10, 30, 1000, 10000, 1000000, 10000000);
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_stat_statements_buffer AS pgmetrics.pg_stat_statements ENGINE = Buffer(pgmetrics, pg_stat_statements, 16, 10, 30, 1000, 10000, 1000000, 10000000);
 
-CREATE TABLE IF NOT EXISTS pg.pg_statio_tables (
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_statio_tables (
    created_date Date DEFAULT today(),
    created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
    created_hour UInt32 DEFAULT toUInt32(toStartOfHour(now())) Codec(Delta, ZSTD),
@@ -66,9 +66,9 @@ CREATE TABLE IF NOT EXISTS pg.pg_statio_tables (
  TTL created_date + toIntervalDay(3)
  SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS pg.pg_statio_tables_buffer AS pg.pg_statio_tables ENGINE = Buffer(pg, pg_statio_tables, 16, 10, 30, 1000, 10000, 1000000, 10000000);
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_statio_tables_buffer AS pgmetrics.pg_statio_tables ENGINE = Buffer(pgmetrics, pg_statio_tables, 16, 10, 30, 1000, 10000, 1000000, 10000000);
 
-CREATE TABLE IF NOT EXISTS pg.pg_table_size (
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_table_size (
    created_date Date DEFAULT today(),
    created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
    created_hour UInt32 DEFAULT toUInt32(toStartOfHour(now())) Codec(Delta, ZSTD),
@@ -86,4 +86,4 @@ CREATE TABLE IF NOT EXISTS pg.pg_table_size (
   TTL created_date + toIntervalDay(12)
   SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS pg.pg_table_size_buffer AS pg.pg_table_size ENGINE = Buffer(pg, pg_table_size, 16, 10, 30, 1000, 10000, 1000000, 10000000);
+CREATE TABLE IF NOT EXISTS pgmetrics.pg_table_size_buffer AS pgmetrics.pg_table_size ENGINE = Buffer(pgmetrics, pg_table_size, 16, 10, 30, 1000, 10000, 1000000, 10000000);
