@@ -6,7 +6,7 @@ services:
       - "8123:8123"
       - "9000:9000"
   postgres:
-    image: postgres:11
+    image: postgres:14
     ports:
       - "5432:5432"
     environment:

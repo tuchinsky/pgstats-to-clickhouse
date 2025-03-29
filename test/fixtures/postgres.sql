@@ -6,7 +6,8 @@ create table if not exists pg_stat_statements (
      queryid  bigint,
      query text,
      calls bigint,
-     total_time double precision,
+     total_plan_time double precision,
+     total_exec_time double precision,
      rows  bigint,
      shared_blks_hit bigint,
      shared_blks_read bigint,
@@ -42,4 +43,5 @@ select
     12,
     13,
     14,
-    15;
+    15,
+    16;

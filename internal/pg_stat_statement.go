@@ -13,7 +13,8 @@ type PgStatStatement struct {
 	username            string
 	query               string
 	calls               float64
-	total_time          float64
+	total_plan_time     float64
+	total_exec_time     float64
 	rows                float64
 	shared_blks_hit     float64
 	shared_blks_read    float64
@@ -38,10 +39,11 @@ func (f *PgStatStatementsFactory) CollectQuery() string {
 	return `SELECT
 				queryid,
 				datname,
-				pg_catalog.pg_get_userbyid(userid) username,
-				left(query, 3000) as query, 
-				calls as calls, 
-				total_time as total_time, 
+				pg_catalog.pg_get_userbyid(userid) as username,
+				left(query, 3000) as query,
+				calls as calls,
+				total_plan_time as total_plan_time,
+				total_exec_time as total_exec_time,
 				rows as rows,
 				shared_blks_hit,
 				shared_blks_read,
@@ -55,7 +57,7 @@ func (f *PgStatStatementsFactory) CollectQuery() string {
 				temp_blks_written,
 				blk_read_time,
 				blk_write_time
-			FROM pg_stat_statements 
+			FROM pg_stat_statements
 			JOIN pg_database ON pg_stat_statements.dbid = pg_database.oid
 			ORDER BY queryid, datname, username, query`
 }
@@ -68,7 +70,8 @@ func (f *PgStatStatementsFactory) PushQuery() string {
 					username,
 					query,
 					calls,
-					total_time,
+					total_plan_time,
+					total_exec_time,
 					rows,
 					shared_blks_hit,
 					shared_blks_read,
@@ -82,7 +85,7 @@ func (f *PgStatStatementsFactory) PushQuery() string {
 					temp_blks_written,
 					blk_read_time,
 					blk_write_time) VALUES (
-						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 					)`
 }
 
@@ -94,7 +97,8 @@ func (f *PgStatStatementsFactory) NewMetric(rows *sql.Rows) (PgMetric, error) {
 		&metric.username,
 		&metric.query,
 		&metric.calls,
-		&metric.total_time,
+		&metric.total_plan_time,
+		&metric.total_exec_time,
 		&metric.rows,
 		&metric.shared_blks_hit,
 		&metric.shared_blks_read,
@@ -139,7 +143,8 @@ func (pss *PgStatStatement) delta(old PgMetric) PgMetric {
 			username:            pss.username,
 			query:               pss.query,
 			calls:               pss.calls,
-			total_time:          pss.total_time,
+			total_plan_time:     pss.total_plan_time,
+			total_exec_time:     pss.total_exec_time,
 			rows:                pss.rows,
 			shared_blks_hit:     pss.shared_blks_hit,
 			shared_blks_read:    pss.shared_blks_read,
@@ -161,7 +166,8 @@ func (pss *PgStatStatement) delta(old PgMetric) PgMetric {
 			username:            pss.username,
 			query:               pss.query,
 			calls:               pss.calls - v.calls,
-			total_time:          pss.total_time - v.total_time,
+			total_plan_time:     pss.total_plan_time - v.total_plan_time,
+			total_exec_time:     pss.total_exec_time - v.total_exec_time,
 			rows:                pss.rows - v.rows,
 			shared_blks_hit:     pss.shared_blks_hit - v.shared_blks_hit,
 			shared_blks_read:    pss.shared_blks_read - v.shared_blks_read,
@@ -180,8 +186,8 @@ func (pss *PgStatStatement) delta(old PgMetric) PgMetric {
 }
 
 /*
-	как здесь написано, допускается использовать queryid в комбо с dbid, userid для идентификации запросов
-	https://www.postgresql.org/docs/current/pgstatstatements.html
+как здесь написано, допускается использовать queryid в комбо с dbid, userid для идентификации запросов
+https://www.postgresql.org/docs/current/pgstatstatements.html
 */
 func (pss *PgStatStatement) getHash() uint32 {
 	return getHash(fmt.Sprintf("%f", pss.queryid), pss.datname, pss.username)
@@ -194,7 +200,8 @@ func (pss *PgStatStatement) getValue(hostname string) []interface{} {
 		pss.username,
 		pss.query,
 		pss.calls,
-		pss.total_time,
+		pss.total_plan_time,
+		pss.total_exec_time,
 		pss.rows,
 		pss.shared_blks_hit,
 		pss.shared_blks_read,

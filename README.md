@@ -30,13 +30,13 @@ env INTERVAL="30s" \
 
 docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "drop table pg_stat_statements"
 docker-compose -f ./test/docker-compose.yml exec -T postgres psql -U postgres -c "create extension pg_stat_statements"
-docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres -i
+docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres -i'
 
-docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres
+docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres'
 ...
 # wait 30 sec
 ...
-docker-compose -f ./test/docker-compose.yml exec -T postgres pgbench -U postgres
+docker-compose -f ./test/docker-compose.yml exec -T postgres su postgres -c 'pgbench -U postgres'
 ```
 open: http://localhost:3000/d/TzHfPjPnz/pg_top_queries
 
