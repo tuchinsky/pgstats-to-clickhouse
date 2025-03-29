@@ -12,12 +12,12 @@ import (
 	"github.com/tuchinsky/pgstats-to-clickhouse/internal"
 )
 
-var usage = `pgstats-to-clickhouse - collects pg_stat_statements, pg_statio_all_tables and pg_stat_tables output and pushes to remote clickhouse
+var usage = `pgstats-to-clickhouse - collects pg_stat_statements, pg_stat_activity, pg_statio_all_tables and pg_stat_tables output and pushes to remote clickhouse
 
 read settings from ENV:
 	INTERVAL - collect interval in seconds (default: "30s", valid units are "ns", "us" (or "µs"), "ms", "s", "m", "h")
-	POSTGRES_DSN - connection to postgres for pg_stat_statements (default: "postgres://postgres@localhost:5432/postgres?sslmode=disable")
-	CLICKHOUSE_DSN - connection to clickhouse for pg_stat_statements (default: "http://localhost:8123/default")
+	POSTGRES_DSN - connection to postgres for pg_stat_statements and pg_stat_activity (default: "postgres://postgres@localhost:5432/postgres?sslmode=disable")
+	CLICKHOUSE_DSN - connection to clickhouse (default: "http://localhost:8123/default")
 	STATIO_POSTGRES_DSN - connection to postgres for pg_statio and pg_stat_tables (disabled by default: "")
 `
 
@@ -42,6 +42,9 @@ func main() {
 	wg.Add(1)
 	go setupPSSCollector(handleSignals(), cfg.Interval, cfg.PostgresDsn, cfg.ClickhouseDsn, &wg)
 
+	wg.Add(1)
+	go setupPSACollector(handleSignals(), cfg.Interval, cfg.PostgresDsn, cfg.ClickhouseDsn, &wg)
+
 	wg.Wait()
 
 	log.Println("daemon terminated")
@@ -65,6 +68,11 @@ func handleSignals() context.Context {
 func setupPSSCollector(ctx context.Context, interval time.Duration, postgresDsn string, clickhouseDsn string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	setupCollector(ctx, &internal.PgStatStatementsFactory{}, interval, postgresDsn, clickhouseDsn)
+}
+
+func setupPSACollector(ctx context.Context, interval time.Duration, postgresDsn string, clickhouseDsn string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	setupCollector(ctx, &internal.PgStatActivityFactory{}, interval, postgresDsn, clickhouseDsn)
 }
 
 func setupPSTCollector(ctx context.Context, interval time.Duration, postgresDsn string, clickhouseDsn string, wg *sync.WaitGroup) {
