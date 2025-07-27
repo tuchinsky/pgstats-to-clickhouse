@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS pgmetrics.pg_stat_statements (
      created_at UInt32 DEFAULT toUInt32(now()) Codec(Delta, ZSTD),
      created_hour UInt32 DEFAULT toUInt32(toStartOfHour(now())) Codec(Delta, ZSTD),
      hostname LowCardinality(String),
+     queryid String,
      datname LowCardinality(String),
      username LowCardinality(String),
      query String,

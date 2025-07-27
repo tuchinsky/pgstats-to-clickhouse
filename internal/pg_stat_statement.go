@@ -66,6 +66,7 @@ func (f *PgStatStatementsFactory) PushQuery() string {
 	//query to store in clickhouse populated data with hostname
 	return `INSERT INTO pgmetrics.pg_stat_statements_buffer(
 					hostname,
+					queryid,
 					datname,
 					username,
 					query,
@@ -85,7 +86,7 @@ func (f *PgStatStatementsFactory) PushQuery() string {
 					temp_blks_written,
 					blk_read_time,
 					blk_write_time) VALUES (
-						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+						?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 					)`
 }
 
@@ -196,6 +197,7 @@ func (pss *PgStatStatement) getHash() uint32 {
 func (pss *PgStatStatement) getValue(hostname string) []interface{} {
 	return []interface{}{
 		hostname,
+		pss.queryid,
 		pss.datname,
 		pss.username,
 		pss.query,
