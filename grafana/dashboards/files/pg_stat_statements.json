@@ -1,12 +1,42 @@
 {
+  "__inputs": [
+    {
+      "name": "datasource",
+      "label": "clickhouse",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "vertamedia-clickhouse-datasource",
+      "pluginName": "Altinity plugin for ClickHouse"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.4.0"
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "vertamedia-clickhouse-datasource",
+      "name": "Altinity plugin for ClickHouse",
+      "version": "3.4.4"
+    }
+  ],
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:49",
         "builtIn": 1,
         "datasource": {
-          "type": "datasource",
-          "uid": "grafana"
+          "type": "grafana",
+          "uid": "-- Grafana --"
         },
         "enable": true,
         "hide": true,
@@ -19,14 +49,16 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 1,
+  "id": null,
   "links": [],
   "panels": [
     {
       "datasource": {
+        "default": false,
         "type": "vertamedia-clickhouse-datasource",
-        "uid": "P7E099F39B84EA795"
+        "uid": "${datasource}"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -41,7 +73,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 50,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -59,13 +91,132 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
             }
           },
           "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "__auto",
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(total_exec_time+total_plan_time) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(total_exec_time+total_plan_time) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "range": true,
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(total_exec_time+total_plan_time) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1753621012)) AND(created_date <= toDate(1753631812)))\r\n    AND((created_at >= 1753621012) AND(created_at <= 1753631812))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753621012))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753631812))\r\n    AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1753621012)) AND(created_date <= toDate(1753631812)))\r\n        AND((created_at >= 1753621012) AND(created_at <= 1753631812))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753621012))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753631812))\r\n        AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(total_exec_time+total_plan_time) DESC\r\n    LIMIT 15)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Total time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -84,23 +235,26 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
+        "h": 7,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 7
       },
-      "id": 2,
+      "id": 5,
       "options": {
-        "dataLinks": [],
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
         },
         "tooltip": {
-          "mode": "multi",
-          "sort": "none"
+          "mode": "single",
+          "sort": "desc"
         }
       },
       "pluginVersion": "11.4.0",
@@ -112,42 +266,634 @@
           "contextWindowSize": "10",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "P7E099F39B84EA795"
+            "uid": "${datasource}"
           },
-          "dateTimeType": "DATETIME",
           "editorMode": "builder",
           "extrapolate": true,
           "format": "time_series",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT\n    t,\n    groupArray((query, rate)) AS groupArr\nFROM\n(\n    SELECT\n        t,\n        query,\n        if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate\n    FROM\n(\n        SELECT\n            (intDiv(toUInt32(created_at), $interval) * $interval) * 1000 AS t,\n            query,\n            max(calls) AS c\n        FROM pgmetrics.pg_stat_statements\n        WHERE\n            ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\n            AND((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n            AND query IN (\n    SELECT query\n    FROM pgmetrics.pg_stat_statements\n    WHERE\n        ((created_at >= toDateTime($from)) AND(created_at <= toDateTime($to)))\n        AND created_date >= toDate($from)\n        AND created_date <= toDate($to)\n    GROUP BY query\n    ORDER BY sum(total_exec_time) DESC\n    LIMIT 15)\n        GROUP BY\n            t,\n            query\n        ORDER BY\n            query ASC,\n            t ASC\n)\n    WHERE rate >= 0\n)\nGROUP BY t\nORDER BY t ASC",
-          "rawQuery": "/* grafana dashboard=pg_stat_statements, user=1 */\nSELECT\n    t,\n    groupArray((query, rate)) AS groupArr\nFROM\n(\n    SELECT\n        t,\n        query,\n        if(runningDifference(c) <= 0, nan, runningDifference(c) / runningDifference(t / 1000)) AS rate\n    FROM\n(\n        SELECT\n            (intDiv(toUInt32(created_at), 10) * 10) * 1000 AS t,\n            query,\n            max(calls) AS c\n        FROM pgmetrics.pg_stat_statements\n        WHERE\n            ((created_date >= toDate(1743254079)) AND(created_date <= toDate(1743275679)))\n            AND((created_at >= toDateTime(1743254079)) AND(created_at <= toDateTime(1743275679)))\n            AND query IN (\n    SELECT query\n    FROM pgmetrics.pg_stat_statements\n    WHERE\n        ((created_at >= toDateTime(1743254079)) AND(created_at <= toDateTime(1743275679)))\n        AND created_date >= toDate(1743254079)\n        AND created_date <= toDate(1743275679)\n    GROUP BY query\n    ORDER BY sum(total_exec_time) DESC\n    LIMIT 15)\n        GROUP BY\n            t,\n            query\n        ORDER BY\n            query ASC,\n            t ASC\n)\n    WHERE rate >= 0\n)\nGROUP BY t\nORDER BY t ASC",
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(calls) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(calls) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC\r\n",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(calls) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1753621468)) AND(created_date <= toDate(1753632268)))\r\n    AND((created_at >= 1753621468) AND(created_at <= 1753632268))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753621468))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753632268))\r\n    AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1753621468)) AND(created_date <= toDate(1753632268)))\r\n        AND((created_at >= 1753621468) AND(created_at <= 1753632268))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753621468))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753632268))\r\n        AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(calls) DESC\r\n    LIMIT 15)\r\nGROUP BY t, q\r\nORDER BY t ASC",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "pg_stat_statements",
+      "title": "Calls",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Total time / Calls",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg((total_exec_time+total_plan_time)/calls) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum((total_exec_time+total_plan_time)/calls) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC\r\n",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg((total_exec_time+total_plan_time)/calls) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1741459242)) AND(created_date <= toDate(1741470042)))\r\n    AND((created_at >= 1741459242) AND(created_at <= 1741470042))\r\n    AND created_hour >= toStartOfHour(toDateTime(1741459242))\r\n    AND created_hour <= toStartOfHour(toDateTime(1741470042))\r\n    AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1741459242)) AND(created_date <= toDate(1741470042)))\r\n        AND((created_at >= 1741459242) AND(created_at <= 1741470042))\r\n        AND created_hour >= toStartOfHour(toDateTime(1741459242))\r\n        AND created_hour <= toStartOfHour(toDateTime(1741470042))\r\n        AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum((total_exec_time+total_plan_time)/calls) DESC\r\n    LIMIT 10)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(rows) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(rows) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC\r\n",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(rows) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1741459258)) AND(created_date <= toDate(1741470058)))\r\n    AND((created_at >= 1741459258) AND(created_at <= 1741470058))\r\n    AND created_hour >= toStartOfHour(toDateTime(1741459258))\r\n    AND created_hour <= toStartOfHour(toDateTime(1741470058))\r\n    AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1741459258)) AND(created_date <= toDate(1741470058)))\r\n        AND((created_at >= 1741459258) AND(created_at <= 1741470058))\r\n        AND created_hour >= toStartOfHour(toDateTime(1741459258))\r\n        AND created_hour <= toStartOfHour(toDateTime(1741470058))\r\n        AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(rows) DESC\r\n    LIMIT 10)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Rows",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Min",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(shared_blks_hit / (shared_blks_hit + shared_blks_read)) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(shared_blks_hit / (shared_blks_hit + shared_blks_read)) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC\r\n",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(shared_blks_hit / (shared_blks_hit + shared_blks_read)) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1746378857)) AND(created_date <= toDate(1746389657)))\r\n    AND((created_at >= 1746378857) AND(created_at <= 1746389657))\r\n    AND created_hour >= toStartOfHour(toDateTime(1746378857))\r\n    AND created_hour <= toStartOfHour(toDateTime(1746389657))\r\n    AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1746378857)) AND(created_date <= toDate(1746389657)))\r\n        AND((created_at >= 1746378857) AND(created_at <= 1746389657))\r\n        AND created_hour >= toStartOfHour(toDateTime(1746378857))\r\n        AND created_hour <= toStartOfHour(toDateTime(1746389657))\r\n        AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(shared_blks_hit / (shared_blks_hit + shared_blks_read)) DESC\r\n    LIMIT 15)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Cache hit ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Number of shared memory bytes returned NOT from the cache",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(shared_blks_read * 8192) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(shared_blks_read) DESC\r\n    LIMIT $limit)\r\nGROUP BY t, q\r\nORDER BY t ASC\r\n",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_statements), user=2 */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(shared_blks_read * ) as value\r\nFROM pgmetrics.pg_stat_statements\r\nWHERE\r\n    ((created_date >= toDate(1746379094)) AND(created_date <= toDate(1746389894)))\r\n    AND((created_at >= 1746379094) AND(created_at <= 1746389894))\r\n    AND created_hour >= toStartOfHour(toDateTime(1746379094))\r\n    AND created_hour <= toStartOfHour(toDateTime(1746389894))\r\n    AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_statements\r\n    WHERE\r\n        ((created_date >= toDate(1746379094)) AND(created_date <= toDate(1746389894)))\r\n        AND((created_at >= 1746379094) AND(created_at <= 1746389894))\r\n        AND created_hour >= toStartOfHour(toDateTime(1746379094))\r\n        AND created_hour <= toStartOfHour(toDateTime(1746389894))\r\n        AND hostname = 'prod-gl-gcpew1c-billing-postgresql01-node01.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY sum(shared_blks_read) DESC\r\n    LIMIT 15)\r\nGROUP BY t, q\r\nORDER BY t ASC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Shared blocks read",
       "type": "timeseries"
     }
   ],
-  "preload": false,
   "refresh": "",
   "schemaVersion": 40,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "hide": 2,
+        "includeAll": false,
+        "label": "datasource",
+        "name": "datasource",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "clickhouse",
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "select datname from pgmetrics.pg_stat_statements where created_hour >= toStartOfHour(now()-interval 1 hour) group by datname order by datname",
+        "includeAll": false,
+        "label": "database",
+        "name": "datname",
+        "options": [],
+        "query": {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasourceMode": "Variable",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "select datname from pgmetrics.pg_stat_statements where created_hour >= toStartOfHour(now()-interval 3 day) group by datname order by datname",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "select datname from pgmetrics.pg_stat_statements where created_hour >= toStartOfHour(now()-interval 1 hour) group by datname order by datname",
+          "rawQuery": "/* grafana dashboard='PostgreSQL (pg_stat_statements)', user='1' */\nselect datname from pgmetrics.pg_stat_statements where created_hour >= toStartOfHour(now()-interval 1 hour) group by datname order by datname",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        },
+        "refresh": 2,
+        "regex": "^(?!postgres).*$",
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "select hostname from pgmetrics.pg_stat_statements where datname IN ('$datname') and created_hour >= toStartOfHour(now()-interval 1 hour) group by hostname order by hostname",
+        "includeAll": false,
+        "label": "instance",
+        "name": "hostname",
+        "options": [],
+        "query": {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasourceMode": "Variable",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "select hostname from pgmetrics.pg_stat_statements where datname IN ('$datname') and created_hour >= toStartOfHour(now()-interval 3 day) group by hostname order by hostname",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "select hostname from pgmetrics.pg_stat_statements where datname IN ('$datname') and created_hour >= toStartOfHour(now()-interval 1 hour) group by hostname order by hostname",
+          "rawQuery": "/* grafana dashboard='PostgreSQL (pg_stat_statements)', user='1' */\nselect hostname from pgmetrics.pg_stat_statements where datname IN ('test') and created_hour >= toStartOfHour(now()-interval 1 hour) group by hostname order by hostname",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "15",
+          "value": "15"
+        },
+        "includeAll": false,
+        "label": "limit",
+        "name": "limit",
+        "options": [
+          {
+            "selected": false,
+            "text": "5",
+            "value": "5"
+          },
+          {
+            "selected": false,
+            "text": "10",
+            "value": "10"
+          },
+          {
+            "selected": true,
+            "text": "15",
+            "value": "15"
+          },
+          {
+            "selected": false,
+            "text": "20",
+            "value": "20"
+          },
+          {
+            "selected": false,
+            "text": "25",
+            "value": "25"
+          },
+          {
+            "selected": false,
+            "text": "30",
+            "value": "30"
+          },
+          {
+            "selected": false,
+            "text": "35",
+            "value": "35"
+          },
+          {
+            "selected": false,
+            "text": "40",
+            "value": "40"
+          }
+        ],
+        "query": "5,10,15,20,25,30,35,40",
+        "type": "custom"
+      }
+    ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "pg_stat_statements",
-  "uid": "s6BrnTjZz",
-  "version": 1,
+  "uid": "eec56kt8auhvkd",
+  "version": 4,
   "weekStart": ""
 }

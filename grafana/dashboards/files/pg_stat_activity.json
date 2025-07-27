@@ -1,0 +1,512 @@
+{
+  "__inputs": [
+    {
+      "name": "datasource",
+      "label": "clickhouse",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "vertamedia-clickhouse-datasource",
+      "pluginName": "Altinity plugin for ClickHouse"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.4.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "vertamedia-clickhouse-datasource",
+      "name": "Altinity plugin for ClickHouse",
+      "version": "3.4.4"
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(toString(pid), ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(toString(pid), ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        pid,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
+          "rawQuery": "/* grafana dashboard='PostgreSQL (pg_stat_activity)', user='1' */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(toString(pid), ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1753630295)) AND(created_date <= toDate(1753633895)))\r\n    AND((created_at >= 1753630295) AND(created_at <= 1753633895))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753630295))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753633895))\r\n    AND hostname = 'LIGHTNING'\r\n    AND datname = 'test'\r\n    AND q IN (\r\n    SELECT\r\n      concat(toString(pid), ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1753630295)) AND(created_date <= toDate(1753633895)))\r\n        AND((created_at >= 1753630295) AND(created_at <= 1753633895))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753630295))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753633895))\r\n        AND hostname = 'LIGHTNING'\r\n        AND datname = 'test'\r\n    GROUP BY\r\n        pid,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Long transactions",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 3,
+      "panels": [],
+      "title": "Details",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "QueryDuration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TxStartAt"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "QueryStartAt"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Username"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "BackendType"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WaitEvent"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TxDuration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pid"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "TxStartAt"
+          }
+        ]
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    username,\r\n    pid,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY pid, username, xact_start, query_start, state, query, backend_type\r\nORDER by pid DESC",
+          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_activity), user=2 */\nSELECT\r\n    username,\r\n    pid,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1741930651)) AND(created_date <= toDate(1741932425)))\r\n    AND((created_at >= 1741930651) AND(created_at <= 1741932425))\r\n    AND created_hour >= toStartOfHour(toDateTime(1741930651))\r\n    AND created_hour <= toStartOfHour(toDateTime(1741932425))\r\n    AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1741930651)) AND(created_date <= toDate(1741932425)))\r\n        AND((created_at >= 1741930651) AND(created_at <= 1741932425))\r\n        AND created_hour >= toStartOfHour(toDateTime(1741930651))\r\n        AND created_hour <= toStartOfHour(toDateTime(1741932425))\r\n        AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC\r\n    LIMIT 5)\r\nGROUP BY pid, username, xact_start, query_start, state, query, backend_type\r\nORDER by pid DESC",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Long transactions (Detailed)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "backend_type": 8,
+              "last_value(query_duration)": 2,
+              "last_value(wait_event)": 9,
+              "last_value(xact_duration)": 1,
+              "pid": 0,
+              "query": 3,
+              "query_id": 4,
+              "query_start": 6,
+              "state": 10,
+              "username": 7,
+              "xact_start": 5
+            },
+            "renameByName": {
+              "backend_type": "BackendType",
+              "last_value(query_duration)": "QueryDuration",
+              "last_value(wait_event)": "WaitEvent",
+              "last_value(xact_duration)": "TxDuration",
+              "pid": "Pid",
+              "query": "Query",
+              "query_id": "QueryID",
+              "query_start": "QueryStartAt",
+              "state": "State",
+              "username": "Username",
+              "wait_event": "WaitEvent",
+              "wait_event_type": "WaitEventType",
+              "xact_start": "TxStartAt"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "TxStartAt"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "QueryStartAt"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 2,
+        "includeAll": false,
+        "label": "datasource",
+        "name": "datasource",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "clickhouse",
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "select datname from pgmetrics.pg_stat_activity where created_hour >= toStartOfHour(now()-interval 3 day) group by datname order by datname",
+        "includeAll": false,
+        "label": "database",
+        "name": "datname",
+        "options": [],
+        "query": "select datname from pgmetrics.pg_stat_activity where created_hour >= toStartOfHour(now()-interval 3 day) group by datname order by datname",
+        "refresh": 2,
+        "regex": "^(?!postgres).*$",
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "select hostname from pgmetrics.pg_stat_activity where datname IN ('$datname') and created_hour >= toStartOfHour(now()-interval 3 day) group by hostname order by hostname",
+        "includeAll": false,
+        "label": "instance",
+        "name": "hostname",
+        "options": [],
+        "query": "select hostname from pgmetrics.pg_stat_activity where datname IN ('$datname') and created_hour >= toStartOfHour(now()-interval 3 day) group by hostname order by hostname",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "pg_stat_activity",
+  "uid": "dee949kyw4ykgb",
+  "version": 6,
+  "weekStart": ""
+}
