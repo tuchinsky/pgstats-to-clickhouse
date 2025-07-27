@@ -12,9 +12,7 @@ Features:
 - skips not changing metrics (not for gauge metrics like n_live_tup, n_dead_tup, relation_size, etc)
 
 ## Example dashboards
-![pg_stat_statements](examples/img/2e640f2055.png)
-
-![pg_stat_tables](examples/img/62add3afdb.png)
+![pg_stat_statements](grafana/pg_stat_statements.png)
 
 ## Usage
 ```bash
