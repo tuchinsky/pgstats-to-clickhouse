@@ -163,8 +163,8 @@
           "interval": "",
           "intervalFactor": 1,
           "nullifySparse": false,
-          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(toString(pid), ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(toString(pid), ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        pid,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
-          "rawQuery": "/* grafana dashboard='PostgreSQL (pg_stat_activity)', user='1' */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(toString(pid), ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1753630295)) AND(created_date <= toDate(1753633895)))\r\n    AND((created_at >= 1753630295) AND(created_at <= 1753633895))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753630295))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753633895))\r\n    AND hostname = 'LIGHTNING'\r\n    AND datname = 'test'\r\n    AND q IN (\r\n    SELECT\r\n      concat(toString(pid), ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1753630295)) AND(created_date <= toDate(1753633895)))\r\n        AND((created_at >= 1753630295) AND(created_at <= 1753633895))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753630295))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753633895))\r\n        AND hostname = 'LIGHTNING'\r\n        AND datname = 'test'\r\n    GROUP BY\r\n        pid,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
+          "query": "SELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', query_id, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', query_id, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        query_id,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
+          "rawQuery": "/* grafana dashboard='pg_stat_activity', user='1' */\nSELECT\r\n    created_at * 1000 AS t,\r\n    concat(username, ' | ', query_id, ' | ', substring(query, 1, 500)) AS q,\r\n    avg(xact_duration) as value\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1753641627)) AND(created_date <= toDate(1753645227)))\r\n    AND((created_at >= 1753641627) AND(created_at <= 1753645227))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753641627))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753645227))\r\n    AND hostname = 'LIGHTNING'\r\n    AND datname = 'test'\r\n    AND q IN (\r\n    SELECT\r\n      concat(username, ' | ', query_id, ' | ', substring(query, 1, 500))\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1753641627)) AND(created_date <= toDate(1753645227)))\r\n        AND((created_at >= 1753641627) AND(created_at <= 1753645227))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753641627))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753645227))\r\n        AND hostname = 'LIGHTNING'\r\n        AND datname = 'test'\r\n    GROUP BY\r\n        query_id,\r\n        username,\r\n        datname,\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY t, q\r\nORDER BY t DESC",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
@@ -329,12 +329,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Pid"
+              "options": "QueryID"
             },
             "properties": [
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 200
               }
             ]
           }
@@ -382,8 +382,9 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT\r\n    username,\r\n    pid,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY pid, username, xact_start, query_start, state, query, backend_type\r\nORDER by pid DESC",
-          "rawQuery": "/* grafana dashboard=PostgreSQL (pg_stat_activity), user=2 */\nSELECT\r\n    username,\r\n    pid,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1741930651)) AND(created_date <= toDate(1741932425)))\r\n    AND((created_at >= 1741930651) AND(created_at <= 1741932425))\r\n    AND created_hour >= toStartOfHour(toDateTime(1741930651))\r\n    AND created_hour <= toStartOfHour(toDateTime(1741932425))\r\n    AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n    AND datname = 'transactions'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1741930651)) AND(created_date <= toDate(1741932425)))\r\n        AND((created_at >= 1741930651) AND(created_at <= 1741932425))\r\n        AND created_hour >= toStartOfHour(toDateTime(1741930651))\r\n        AND created_hour <= toStartOfHour(toDateTime(1741932425))\r\n        AND hostname = 'prod-gl-gcpew3a-billing-postgresql01-node02.gl.mx'\r\n        AND datname = 'transactions'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC\r\n    LIMIT 5)\r\nGROUP BY pid, username, xact_start, query_start, state, query, backend_type\r\nORDER by pid DESC",
+          "nullifySparse": false,
+          "query": "SELECT\r\n    username,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    query_id,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n    AND((created_at >= $from) AND(created_at <= $to))\r\n    AND created_hour >= toStartOfHour(toDateTime($from))\r\n    AND created_hour <= toStartOfHour(toDateTime($to))\r\n    AND hostname = '$hostname'\r\n    AND datname = '$datname'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate($from)) AND(created_date <= toDate($to)))\r\n        AND((created_at >= $from) AND(created_at <= $to))\r\n        AND created_hour >= toStartOfHour(toDateTime($from))\r\n        AND created_hour <= toStartOfHour(toDateTime($to))\r\n        AND hostname = '$hostname'\r\n        AND datname = '$datname'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY username, xact_start, query_start, state, query, query_id, backend_type\r\nORDER by query DESC",
+          "rawQuery": "/* grafana dashboard='pg_stat_activity', user='1' */\nSELECT\r\n    username,\r\n    xact_start,\r\n    query_start,\r\n    state,\r\n    query,\r\n    query_id,\r\n    backend_type,\r\n    last_value(wait_event),\r\n    last_value(xact_duration),\r\n    last_value(query_duration)\r\nFROM pgmetrics.pg_stat_activity\r\nWHERE\r\n    ((created_date >= toDate(1753641553)) AND(created_date <= toDate(1753645153)))\r\n    AND((created_at >= 1753641553) AND(created_at <= 1753645153))\r\n    AND created_hour >= toStartOfHour(toDateTime(1753641553))\r\n    AND created_hour <= toStartOfHour(toDateTime(1753645153))\r\n    AND hostname = 'LIGHTNING'\r\n    AND datname = 'test'\r\n    AND query IN (\r\n    SELECT\r\n      query\r\n    FROM pgmetrics.pg_stat_activity\r\n    WHERE\r\n        ((created_date >= toDate(1753641553)) AND(created_date <= toDate(1753645153)))\r\n        AND((created_at >= 1753641553) AND(created_at <= 1753645153))\r\n        AND created_hour >= toStartOfHour(toDateTime(1753641553))\r\n        AND created_hour <= toStartOfHour(toDateTime(1753645153))\r\n        AND hostname = 'LIGHTNING'\r\n        AND datname = 'test'\r\n    GROUP BY\r\n        query\r\n    ORDER BY avg(created_at) DESC)\r\nGROUP BY username, xact_start, query_start, state, query, query_id, backend_type\r\nORDER by query DESC",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": false,
@@ -399,17 +400,16 @@
             "excludeByName": {},
             "includeByName": {},
             "indexByName": {
-              "backend_type": 8,
-              "last_value(query_duration)": 2,
-              "last_value(wait_event)": 9,
-              "last_value(xact_duration)": 1,
-              "pid": 0,
-              "query": 3,
-              "query_id": 4,
-              "query_start": 6,
-              "state": 10,
-              "username": 7,
-              "xact_start": 5
+              "backend_type": 7,
+              "last_value(query_duration)": 3,
+              "last_value(wait_event)": 8,
+              "last_value(xact_duration)": 2,
+              "query": 4,
+              "query_id": 5,
+              "query_start": 1,
+              "state": 9,
+              "username": 6,
+              "xact_start": 0
             },
             "renameByName": {
               "backend_type": "BackendType",
@@ -500,13 +500,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "pg_stat_activity",
   "uid": "dee949kyw4ykgb",
-  "version": 6,
+  "version": 7,
   "weekStart": ""
 }
