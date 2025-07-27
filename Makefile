@@ -1,22 +1,17 @@
-docker-compose-file=./test/docker-compose.yaml
+project-name=pgstats
 
-test-full: up
-	@go test ./...
-	@make down
-
-test:
-	@go test ./...
+docker-compose-file=./docker/docker-compose.yaml
 
 up:
-	docker-compose -f ${docker-compose-file} up -d --build
+	docker-compose -p ${project-name} -f ${docker-compose-file} up -d --build
 
 	sleep 3
 
-	docker-compose -f ${docker-compose-file} exec -T postgres psql -U postgres  < ./test/fixtures/postgres.sql
-	docker-compose -f ${docker-compose-file} exec -T clickhouse clickhouse-client -mn < ./test/fixtures/clickhouse.sql
+	docker-compose -p ${project-name} -f ${docker-compose-file} exec -T postgres psql -U postgres  < ./docker/fixtures/postgres.sql
+	docker-compose -p ${project-name} -f ${docker-compose-file} exec -T clickhouse clickhouse-client -mn < ./docker/fixtures/clickhouse.sql
 
 down:
-	docker-compose -f ${docker-compose-file} down --volumes
+	docker-compose -p ${project-name} -f ${docker-compose-file} down --volumes
 
 fmt:
 	@go fmt ./...
@@ -31,4 +26,4 @@ build:
 	mkdir -p ./bin
 	@go build -o ./bin/pgstats-to-clickhouse ./cmd/pgstats-to-clickhouse
 
-.PHONY: test-full test up down fmt vet lint build
+.PHONY: up down fmt vet lint build
